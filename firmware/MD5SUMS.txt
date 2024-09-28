@@ -6,6 +6,7 @@ bdad44ca54ea8d08f0701611f2c438a7  d2rg_mmdvm_hs.bin
 d12082938a48a3daede34d8f43246cc5  generic_duplex_gpio_fw.bin
 236136f142a053e012f718353f26bd60  generic_duplex_usb_fw.bin
 f787c273bc4894c4973498241911c7cf  generic_gpio_fw.bin
+f45a3df15109f11153d61953d8b88400  hs_hat_ambe.bin
 9befd89525b6c2e13b3e312bd1410e78  hs_hat_nano_hotspot-duplex.bin
 f63c9d1a7c9f8d1cb3fdc0e660f94bda  lonestar_usb_fw.bin
 5ec64c68590ebaff2e26d25e0178cabe  mmdvm_f4.bin
