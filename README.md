@@ -1,1 +1,1 @@
-Thesse are custom-complied binaries for `W0CHP-PiStar-Dash`.
+Thesse are custom-complied binaries for `WPSD`.
