@@ -27,11 +27,11 @@ d8071b8ac00bf2f3b968d81728d44bb0  mmdvm_hs_hat_fw.bin
 3078658fb8b42b0c203c1e7feb340c3b  Repeater-Builder_v4.bin
 62b805105563c7c9db0877802ff11bab  Repeater-Builder_v5.bin
 c3486a9004c2c078c9cc32d453ebc542  skybridge_rpi_fw.bin
-37a05f81c198cc03b1ade78dcfe233e1  ZUM_MMDVM-Pi_0.9.bin
+7a14342f0d150068bcee394c2c568d13  ZUM_MMDVM-Pi_0.9.bin
 3078658fb8b42b0c203c1e7feb340c3b  ZUM_MMDVM-Pi_0.9-F4.bin
 ed68594942551b0f902f406adfd6b20b  ZUM_MMDVM-Pi_1.0.bin
-3078658fb8b42b0c203c1e7feb340c3b  ZUM_MMDVM-Pi_1.0-F4.bin
-62b805105563c7c9db0877802ff11bab  ZUM_MMDVM-Pi_1.0-F7.bin
+7a14342f0d150068bcee394c2c568d13  ZUM_MMDVM-Pi_1.0-F4.bin
+585d1928e5cb823a44cd60624db472f9  ZUM_MMDVM-Pi_1.0-F7.bin
 d22f290a1fd026f52d7a80d1a1557f5e  zumspot_dualband_fw.bin
 5a1b8113c6e28b6dbbf5c735156d043e  zumspot_duplex_fw.bin
 eaa09cff095daf923dea5150a9e98ffe  zumspot_libre_fw.bin
