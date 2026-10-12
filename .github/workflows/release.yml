@@ -1,7 +1,8 @@
 name: Release
 
-# Builds MMDVMHost and M17Gateway for WPSD and commits them to this branch. Hotspots pull master
-# nightly, so running this on master releases the binaries.
+# Builds MMDVMHost and M17Gateway for WPSD, copies in the modem firmware built in the M17-Project
+# MMDVM_HS and MMDVM repositories, and commits them to this branch. Hotspots pull master nightly,
+# so running this on master releases the binaries.
 
 on:
   workflow_dispatch:
@@ -38,6 +39,16 @@ jobs:
           repository: M17-Project/M17Gateway
           ref: ${{ inputs.m17gateway_ref }}
           path: src/M17Gateway
+
+      - uses: actions/checkout@v7
+        with:
+          repository: M17-Project/MMDVM_HS
+          path: src/MMDVM_HS
+
+      - uses: actions/checkout@v7
+        with:
+          repository: M17-Project/MMDVM
+          path: src/MMDVM
 
       - uses: actions/checkout@v7
         with:
@@ -91,15 +102,18 @@ jobs:
         working-directory: binaries
         run: |
           cp ../out/MMDVMHost ../out/RemoteCommand ../out/M17Gateway .
+          .github/scripts/copy-firmware.sh ../src/MMDVM_HS ../src/MMDVM firmware
           host=$(git -C ../src/MMDVMHost rev-parse --short HEAD)
           gateway=$(git -C ../src/M17Gateway rev-parse --short HEAD)
-          git add MMDVMHost RemoteCommand M17Gateway
+          hs=$(git -C ../src/MMDVM_HS rev-parse --short HEAD)
+          rpt=$(git -C ../src/MMDVM rev-parse --short HEAD)
+          git add MMDVMHost RemoteCommand M17Gateway firmware
           if git diff --cached --quiet; then
             echo "The binaries are unchanged" | tee -a "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Build $VERSION: MMDVMHost ${{ inputs.mmdvmhost_ref }} #$host, M17Gateway ${{ inputs.m17gateway_ref }} #$gateway."
+          git commit -m "Build $VERSION: MMDVMHost ${{ inputs.mmdvmhost_ref }} #$host, M17Gateway ${{ inputs.m17gateway_ref }} #$gateway, MMDVM_HS #$hs, MMDVM #$rpt."
           git push origin HEAD:"$GITHUB_REF_NAME"
           git log -1 --format="Committed %h: %s" | tee -a "$GITHUB_STEP_SUMMARY"
