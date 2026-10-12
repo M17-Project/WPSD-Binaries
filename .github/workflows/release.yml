@@ -1,0 +1,105 @@
+name: Release
+
+# Builds MMDVMHost and M17Gateway for WPSD and commits them to this branch. Hotspots pull master
+# nightly, so running this on master releases the binaries.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mmdvmhost_ref:
+        description: M17-Project/MMDVMHost branch, tag or commit
+        default: v1.0
+      m17gateway_ref:
+        description: M17-Project/M17Gateway branch, tag or commit
+        default: main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: binaries
+
+      - uses: actions/checkout@v7
+        with:
+          repository: M17-Project/MMDVMHost
+          ref: ${{ inputs.mmdvmhost_ref }}
+          path: src/MMDVMHost
+
+      - uses: actions/checkout@v7
+        with:
+          repository: M17-Project/M17Gateway
+          ref: ${{ inputs.m17gateway_ref }}
+          path: src/M17Gateway
+
+      - uses: actions/checkout@v7
+        with:
+          repository: M17-Project/WPSD_CustomBinaries-Source
+          sparse-checkout: ArduiPi_OLED
+          path: src/WPSD_CustomBinaries-Source
+
+      - uses: actions/checkout@v7
+        with:
+          repository: WiringPi/WiringPi
+          ref: v3.20
+          path: src/WiringPi
+
+      - name: Install the build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends debootstrap qemu-user-static
+          # The chroot needs the ARM interpreter registered with the F (fix binary) flag
+          grep -x 'flags: .*F.*' /proc/sys/fs/binfmt_misc/qemu-arm
+
+      # The root filesystem is owned by root, so it's cached as a tarball
+      - name: Restore the root filesystem
+        id: rootfs
+        uses: actions/cache/restore@v6
+        with:
+          path: rootfs.tar.zst
+          key: rootfs-${{ hashFiles('binaries/.github/scripts/build-armhf.sh') }}
+
+      - name: Unpack the root filesystem
+        if: steps.rootfs.outputs.cache-hit == 'true'
+        run: mkdir work && sudo tar -C work --zstd -xpf rootfs.tar.zst
+
+      - name: Build
+        run: |
+          echo "VERSION=$(date -u +%Y%m%d)_M17" >> "$GITHUB_ENV"
+          VERSION=$(date -u +%Y%m%d)_M17 binaries/.github/scripts/build-armhf.sh work \
+            src/MMDVMHost src/M17Gateway src/WPSD_CustomBinaries-Source/ArduiPi_OLED src/WiringPi out
+
+      - name: Pack the root filesystem
+        if: steps.rootfs.outputs.cache-hit != 'true'
+        run: sudo rm -rf work/rootfs/build && sudo tar -C work --zstd -cpf rootfs.tar.zst rootfs
+
+      - name: Save the root filesystem
+        if: steps.rootfs.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: rootfs.tar.zst
+          key: ${{ steps.rootfs.outputs.cache-primary-key }}
+
+      - name: Commit the binaries
+        working-directory: binaries
+        run: |
+          cp ../out/MMDVMHost ../out/RemoteCommand ../out/M17Gateway .
+          host=$(git -C ../src/MMDVMHost rev-parse --short HEAD)
+          gateway=$(git -C ../src/M17Gateway rev-parse --short HEAD)
+          git add MMDVMHost RemoteCommand M17Gateway
+          if git diff --cached --quiet; then
+            echo "The binaries are unchanged" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Build $VERSION: MMDVMHost ${{ inputs.mmdvmhost_ref }} #$host, M17Gateway ${{ inputs.m17gateway_ref }} #$gateway."
+          git push origin HEAD:"$GITHUB_REF_NAME"
+          git log -1 --format="Committed %h: %s" | tee -a "$GITHUB_STEP_SUMMARY"
