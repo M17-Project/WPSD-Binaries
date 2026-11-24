@@ -1,3 +1,3 @@
-mmdvm_hs=1.6.1_20261116_GitID#02e5646_M17
-rpt=20261119_GitID#63c7db2_M17
+mmdvm_hs=1.6.1_20261123_GitID#5d49f1a_M17
+rpt=20260424_GitID#9788b9a_M17
 dvmega=3.26
